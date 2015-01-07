@@ -1,0 +1,26 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "Yuriy Galanter",
+    "longName": "Digital Analog Face",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/MENU.png",
+                "menuIcon": true,
+                "name": "menu",
+                "type": "png"
+            }
+        ]
+    },
+    "shortName": "Diginalog",
+    "uuid": "4a14d807-a42d-4dd7-a468-3f06370cc369",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
