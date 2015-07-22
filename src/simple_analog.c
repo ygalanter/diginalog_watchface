@@ -5,6 +5,7 @@
 #include "string.h"
 #include "stdlib.h"
 
+
 // layers to display: Day of the week, month, bluetooth status, battery percentage
 Layer *info_layer;
 TextLayer *dow_label;
@@ -27,6 +28,8 @@ static GPath *hour_arrow;
 Layer *hands_layer;
 Window *window;
 
+ 
+
 static void hands_update_proc(Layer *layer, GContext *ctx) {
     
   time_t now = time(NULL);
@@ -34,19 +37,18 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 
   int32_t hour_angle = (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6);
   int32_t minute_angle = TRIG_MAX_ANGLE * t->tm_min / 60;
-
+  
   // minute/hour hand
+  gpath_rotate_to(hour_arrow,  hour_angle);
+  gpath_rotate_to(minute_arrow, minute_angle);
+  
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_context_set_stroke_color(ctx, GColorBlack);
-  
-  gpath_rotate_to(hour_arrow,  hour_angle);
-  gpath_draw_filled(ctx, hour_arrow);
+
   gpath_draw_outline(ctx, hour_arrow);
-  
-  gpath_rotate_to(minute_arrow, minute_angle);
-  gpath_draw_filled(ctx, minute_arrow);
   gpath_draw_outline(ctx, minute_arrow);
-  
+  gpath_draw_filled(ctx, minute_arrow);
+  gpath_draw_filled(ctx, hour_arrow);
   
   //drawing circles with time
   if (!clock_is_24h_style()) {
@@ -72,18 +74,21 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   
   graphics_context_set_fill_color(ctx, GColorWhite); graphics_fill_circle(ctx, GPoint(currX, currY), 13);
   graphics_context_set_fill_color(ctx, GColorBlack); graphics_fill_circle(ctx, GPoint(currX, currY), 11);
+  
   graphics_draw_text(ctx, minute_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(currX-10, currY-12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
   
   currY = -30 * cos_lookup(hour_angle) / TRIG_MAX_RATIO + center.y -7;
   currX = 30 * sin_lookup(hour_angle) / TRIG_MAX_RATIO + center.x;
   
+  
   graphics_context_set_fill_color(ctx, GColorWhite); graphics_fill_circle(ctx, GPoint(currX, currY), 13);
   graphics_context_set_fill_color(ctx, GColorBlack); graphics_fill_circle(ctx, GPoint(currX, currY), 11);
+  
   graphics_draw_text(ctx, hour_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(currX-10, currY-12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 
-  
   graphics_context_set_fill_color(ctx, GColorWhite); graphics_fill_circle(ctx, GPoint(center.x, center.y - 7), 14);
   graphics_context_set_fill_color(ctx, GColorBlack); graphics_fill_circle(ctx, GPoint(center.x, center.y - 7), 11);
+  
   graphics_draw_text(ctx, num_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(center.x - 10, center.y - 7 - 12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
   
 }
@@ -136,7 +141,7 @@ static void window_load(Window *window) {
   text_layer_set_text(dow_label, dow_buffer);
   text_layer_set_font(dow_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_text_color(dow_label, GColorWhite);
-  text_layer_set_background_color(dow_label, GColorBlack);
+  
   text_layer_set_text_alignment(dow_label, GTextAlignmentLeft);
   layer_add_child(info_layer, text_layer_get_layer(dow_label));
   
@@ -145,7 +150,7 @@ static void window_load(Window *window) {
   text_layer_set_text(month_label, month_buffer);
   text_layer_set_font(month_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_text_color(month_label, GColorWhite);
-  text_layer_set_background_color(month_label, GColorBlack);
+  
   text_layer_set_text_alignment(month_label, GTextAlignmentRight);
   layer_add_child(info_layer, text_layer_get_layer(month_label));
   
@@ -154,7 +159,7 @@ static void window_load(Window *window) {
   text_layer_set_text(battery_label, battery_buffer);
   text_layer_set_font(battery_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_text_color(battery_label, GColorWhite);
-  text_layer_set_background_color(battery_label, GColorBlack);
+  
   text_layer_set_text_alignment(battery_label, GTextAlignmentRight);
   layer_add_child(info_layer, text_layer_get_layer(battery_label));
   
@@ -162,17 +167,21 @@ static void window_load(Window *window) {
   bluetooth_label = text_layer_create(GRect(3, 0, 25, 28));
   text_layer_set_font(bluetooth_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_text_color(bluetooth_label, GColorWhite);
-  text_layer_set_background_color(bluetooth_label, GColorBlack);
+  
   text_layer_set_text_alignment(bluetooth_label, GTextAlignmentLeft);
   layer_add_child(info_layer, text_layer_get_layer(bluetooth_label));
   
+ text_layer_set_background_color(dow_label, GColorBlack);
+ text_layer_set_background_color(month_label, GColorBlack);
+ text_layer_set_background_color(battery_label, GColorBlack);
+ text_layer_set_background_color(bluetooth_label, GColorBlack);
+ 
   // initial bluetooth check
   if (bluetooth_connection_service_peek()) {
     text_layer_set_text(bluetooth_label, "ß");
   } else {
     text_layer_set_text(bluetooth_label, "†");
   }
-
   
 
   // init hands
@@ -193,7 +202,9 @@ static void window_unload(Window *window) {
 static void init(void) {
   setlocale(LC_ALL, "");
   window = window_create();
-  window_set_background_color(window, GColorBlack);
+
+  window_set_background_color(window, GColorBlack);  
+  
   window_set_window_handlers(window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,

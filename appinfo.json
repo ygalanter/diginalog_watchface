@@ -9,17 +9,21 @@
     "resources": {
         "media": [
             {
-                "file": "images/MENU.png",
+                "file": "images/menu.png",
                 "menuIcon": true,
                 "name": "menu",
                 "type": "png"
             }
         ]
     },
+    "sdkVersion": "3",
     "shortName": "Diginalog",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
     "uuid": "4a14d807-a42d-4dd7-a468-3f06370cc369",
-    "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "2.1",
     "watchapp": {
         "watchface": true
     }
