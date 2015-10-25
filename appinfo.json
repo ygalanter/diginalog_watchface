@@ -20,10 +20,11 @@
     "shortName": "Diginalog",
     "targetPlatforms": [
         "aplite",
-        "basalt"
+        "basalt",
+        "chalk"
     ],
     "uuid": "4a14d807-a42d-4dd7-a468-3f06370cc369",
-    "versionLabel": "2.1",
+    "versionLabel": "2.5",
     "watchapp": {
         "watchface": true
     }

@@ -69,7 +69,11 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   GPoint center = grect_center_point(&bounds);
   
-  int currY = -57 * cos_lookup(minute_angle) / TRIG_MAX_RATIO + center.y - 7;
+  #ifdef PBL_PLATFORM_APLITE
+    center.y -=7;
+  #endif    
+    
+  int currY = -57 * cos_lookup(minute_angle) / TRIG_MAX_RATIO + center.y;
   int currX = 57 * sin_lookup(minute_angle) / TRIG_MAX_RATIO + center.x;
   
   graphics_context_set_fill_color(ctx, GColorWhite); graphics_fill_circle(ctx, GPoint(currX, currY), 13);
@@ -77,7 +81,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   
   graphics_draw_text(ctx, minute_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(currX-10, currY-12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
   
-  currY = -30 * cos_lookup(hour_angle) / TRIG_MAX_RATIO + center.y -7;
+  currY = -30 * cos_lookup(hour_angle) / TRIG_MAX_RATIO + center.y;
   currX = 30 * sin_lookup(hour_angle) / TRIG_MAX_RATIO + center.x;
   
   
@@ -86,10 +90,10 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   
   graphics_draw_text(ctx, hour_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(currX-10, currY-12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 
-  graphics_context_set_fill_color(ctx, GColorWhite); graphics_fill_circle(ctx, GPoint(center.x, center.y - 7), 14);
-  graphics_context_set_fill_color(ctx, GColorBlack); graphics_fill_circle(ctx, GPoint(center.x, center.y - 7), 11);
+  graphics_context_set_fill_color(ctx, GColorWhite); graphics_fill_circle(ctx, GPoint(center.x, center.y), 14);
+  graphics_context_set_fill_color(ctx, GColorBlack); graphics_fill_circle(ctx, GPoint(center.x, center.y), 11);
   
-  graphics_draw_text(ctx, num_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(center.x - 10, center.y - 7 - 12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+  graphics_draw_text(ctx, num_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(center.x - 10, center.y - 12, 20, 20), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
   
 }
 
@@ -129,13 +133,19 @@ void display_bt_layer(bool connected) {
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layer);
+  
+  #ifdef PBL_PLATFORM_APLITE
+    GRect bounds = layer_get_bounds(window_layer);
+  #else
+    GRect bounds = layer_get_bounds(window_layer);
+    //GRect bounds = grect_inset(layer_get_bounds(window_layer), GEdgeInsets(90));
+  #endif 
 
   // init date layer -> a plain parent layer to show text info
   info_layer = layer_create(bounds);
   layer_set_update_proc(info_layer, info_update_proc);
   layer_add_child(window_layer, info_layer);
-
+  
   // init day of the week
   dow_label = text_layer_create(GRect(3, 143, 25, 28));
   text_layer_set_text(dow_label, dow_buffer);
@@ -176,9 +186,17 @@ static void window_load(Window *window) {
  text_layer_set_background_color(battery_label, GColorBlack);
  text_layer_set_background_color(bluetooth_label, GColorBlack);
  
+ // temp hinding text labels on Chalk until better place for them found on round screen 
+ #ifdef PBL_PLATFORM_CHALK 
+   layer_set_hidden(text_layer_get_layer(dow_label), true);
+   layer_set_hidden(text_layer_get_layer(month_label), true);
+   layer_set_hidden(text_layer_get_layer(battery_label), true);
+   layer_set_hidden(text_layer_get_layer(bluetooth_label), true); 
+ #endif 
+ 
   // initial bluetooth check
   if (bluetooth_connection_service_peek()) {
-    text_layer_set_text(bluetooth_label, "ß");
+    text_layer_set_text(bluetooth_label, "B");
   } else {
     text_layer_set_text(bluetooth_label, "†");
   }
